@@ -1,5 +1,5 @@
 const express = require('express');
-const odbc = require('odbc');
+const oracledb = require('oracledb');
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
@@ -7,20 +7,27 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-const connectionString = 'DSN=SIPQA;UID=SIPQA;PWD=QU452;';
+const dbConfig = {
+  user: 'SIPQA',
+  password: 'QU452',
+  connectString: '(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.10.53)(PORT=1521)))(CONNECT_DATA=(SERVICE_NAME=SIPDESA)))'
+};
 
 app.post('/api/track', async (req, res) => {
   const { trackingNumber } = req.body;
 
   try {
-    const connection = await odbc.connect(connectionString);
-    const result = await connection.query(`SELECT * FROM BOK_GUIA_HEAD WHERE GH_GUIA_NO = ?`, [trackingNumber]);
+    const connection = await oracledb.getConnection(dbConfig);
+    const result = await connection.execute(
+      `SELECT * FROM BOK_GUIA_HEAD WHERE GH_GUIA_NO = :trackingNumber`,
+      [trackingNumber]
+    );
     await connection.close();
 
-    if (result.length === 0) {
+    if (result.rows.length === 0) {
       res.status(404).json({ error: 'No se encontró la guía' });
     } else {
-      res.json(result);
+      res.json(result.rows);
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
