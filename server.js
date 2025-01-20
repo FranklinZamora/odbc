@@ -1,8 +1,9 @@
+// filepath: /c:/Users/fzamora/Documents/Power_Platform_Pages/test-odbc---testingbd/server.js
 const express = require('express');
 const odbc = require('odbc');
 const cors = require('cors');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -17,7 +18,11 @@ app.post('/api/track', async (req, res) => {
     const result = await connection.query(`SELECT * FROM BOK_GUIA_HEAD WHERE GH_GUIA_NO = ?`, [trackingNumber]);
     await connection.close();
 
-    res.json(result);
+    if (result.length === 0) {
+      res.status(404).json({ error: 'No se encontró la guía' });
+    } else {
+      res.json(result);
+    }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
