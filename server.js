@@ -1,4 +1,3 @@
-// filepath: /c:/Users/fzamora/Documents/Power_Platform_Pages/test-odbc---testingbd/server.js
 const express = require('express');
 const odbc = require('odbc');
 const cors = require('cors');
